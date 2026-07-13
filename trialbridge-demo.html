@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TrialBridge MVP Demo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0F6E56;--teal-mid:#1D9E75;--teal-light:#E1F5EE;--teal-pale:#F0FAF6;
+  --purple:#3C3489;--purple-light:#EEEDFE;
+  --amber:#B45309;--amber-light:#FEF3C7;
+  --red:#DC2626;--red-light:#FEE2E2;
+  --dark:#0F1A17;--mid:#4A5550;--light:#8FA89F;
+  --border:#D8E8E2;--bg:#F7F9F8;--white:#FFFFFF;
+  --sidebar:220px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--dark);font-size:14px;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+*,*::before,*::after{box-sizing:border-box;}
+
+/* TOP NAV */
+.topnav{background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;height:48px;flex-shrink:0;z-index:50;}
+.topnav-logo{font-weight:700;font-size:1rem;color:#fff;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;}
+.logo-badge{background:var(--teal-mid);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;}
+.topnav-modules{display:flex;gap:4px;}
+.mod-btn{background:transparent;border:none;color:rgba(255,255,255,0.55);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s;letter-spacing:0.02em;}
+.mod-btn:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.mod-btn.active{color:#fff;background:var(--teal);}
+.topnav-user{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.6);}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--teal-mid);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;}
+
+/* LAYOUT */
+.app-shell{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:var(--sidebar);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+.sidebar-section{padding:1rem 0.75rem 0.5rem;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--light);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;margin:1px 6px;cursor:pointer;color:var(--mid);font-size:13px;font-weight:500;transition:all .15s;}
+.nav-item:hover{background:var(--bg);color:var(--dark);}
+.nav-item.active{background:var(--teal-light);color:var(--teal);font-weight:600;}
+.nav-icon{width:16px;text-align:center;font-size:14px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;}
+.nav-badge.amber{background:var(--amber);}
+.sidebar-footer{margin-top:auto;padding:1rem;border-top:1px solid var(--border);}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--teal-mid);display:inline-block;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.main{flex:1;overflow-y:auto;padding:1.5rem;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* COMPONENTS */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;gap:1rem;}
+.page-title{font-size:1.3rem;font-weight:700;color:var(--dark);letter-spacing:-0.02em;}
+.page-sub{font-size:12px;color:var(--mid);margin-top:3px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.btn-primary{background:var(--teal-mid);color:#fff;}
+.btn-primary:hover{background:var(--teal);}
+.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--bg);color:var(--dark);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+.card-title{font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--light);margin-bottom:0.75rem;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
+.stat-val{font-size:1.8rem;font-weight:700;color:var(--dark);letter-spacing:-0.03em;}
+.stat-lbl{font-size:12px;color:var(--mid);margin-top:2px;}
+.stat-change{font-size:11px;font-weight:600;margin-top:6px;}
+.stat-change.up{color:var(--teal-mid);}
+.stat-change.warn{color:var(--amber);}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.tag-teal{background:var(--teal-light);color:var(--teal);}
+.tag-purple{background:var(--purple-light);color:var(--purple);}
+.tag-amber{background:var(--amber-light);color:var(--amber);}
+.tag-red{background:var(--red-light);color:var(--red);}
+.tag-gray{background:var(--bg);color:var(--mid);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--light);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--dark);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg);}
+.form-group{margin-bottom:1rem;}
+.form-label{font-size:12px;font-weight:600;color:var(--mid);margin-bottom:5px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--dark);background:var(--white);transition:border-color .2s;font-family:inherit;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--teal-mid);box-shadow:0 0 0 3px rgba(29,158,117,0.1);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.offline-banner{background:var(--amber-light);border:1px solid #FCD34D;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:1rem;font-size:12px;color:var(--amber);font-weight:600;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.alert-item:last-child{border-bottom:none;}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.alert-dot.red{background:var(--red);}
+.alert-dot.amber{background:var(--amber);}
+.alert-dot.teal{background:var(--teal-mid);}
+.alert-text{font-size:13px;color:var(--dark);line-height:1.4;}
+.alert-meta{font-size:11px;color:var(--light);margin-top:2px;}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.prog-label{font-size:12px;color:var(--mid);width:130px;flex-shrink:0;}
+.prog-bar{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.prog-fill{height:100%;border-radius:3px;background:var(--teal-mid);}
+.prog-pct{font-size:12px;font-weight:600;color:var(--dark);width:40px;text-align:right;}
+.sovereign-badge{display:flex;align-items:center;gap:8px;background:var(--teal-light);border:1px solid var(--teal-mid);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:var(--teal);font-weight:600;line-height:1.4;}
+.step-indicator{display:flex;align-items:center;gap:0;margin-bottom:1.5rem;}
+.step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;}
+.step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.step.done .step-num{background:var(--teal-mid);color:#fff;}
+.step.active .step-num{background:var(--teal);color:#fff;}
+.step.todo .step-num{background:var(--border);color:var(--light);}
+.step.done .step-text{color:var(--teal);}
+.step.active .step-text{color:var(--dark);}
+.step.todo .step-text{color:var(--light);}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 8px;}
+.step-line.done{background:var(--teal-mid);}
+.fed-diagram{display:flex;align-items:center;justify-content:center;gap:0;padding:1rem 0;flex-wrap:wrap;}
+.fed-node{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;min-width:100px;}
+.fed-node .node-icon{font-size:1.3rem;margin-bottom:3px;}
+.fed-node .node-label{font-size:11px;font-weight:600;color:var(--dark);}
+.fed-node .node-sub{font-size:10px;color:var(--light);margin-top:1px;}
+.fed-arrow{display:flex;flex-direction:column;align-items:center;padding:0 6px;}
+.fed-arrow-line{width:36px;height:2px;background:var(--teal-mid);}
+.fed-arrow-label{font-size:9px;color:var(--teal);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;margin-top:3px;white-space:nowrap;}
+.fed-center{background:var(--teal);color:#fff;border-radius:10px;padding:14px 18px;text-align:center;min-width:130px;}
+.fed-center .node-label{font-size:11px;font-weight:700;color:#fff;}
+.fed-center .node-sub{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;}
+.module-label{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:1rem;}
+.ml-clinician{background:var(--teal-light);color:var(--teal);}
+.ml-researcher{background:var(--purple-light);color:var(--purple);}
+.ml-admin{background:#E6F1FB;color:#185FA5;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dark);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="topnav-logo">
+    <span class="logo-badge">TB</span>
+    TrialBridge
+    <span style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:400;margin-left:4px;">by Telecity Technologies</span>
+  </div>
+  <div class="topnav-modules">
+    <button class="mod-btn active" onclick="switchModule('clinician',this)">🏥 Clinician App</button>
+    <button class="mod-btn" onclick="switchModule('researcher',this)">🔬 Researcher Portal</button>
+    <button class="mod-btn" onclick="switchModule('admin',this)">⚙️ Admin Dashboard</button>
+  </div>
+  <div class="topnav-user">
+    <div class="avatar" id="av">NK</div>
+    <div>
+      <div style="color:#fff;font-weight:600;font-size:12px;" id="uname">Nurse Kemi</div>
+      <div style="font-size:10px;" id="uloc">Gbagada General, Lagos</div>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell">
+  <div class="sidebar">
+    <div id="sb-clinician">
+      <div class="sidebar-section">Clinical</div>
+      <div class="nav-item active" onclick="showPage('c-dashboard',this)"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showPage('c-new-patient',this)"><span class="nav-icon">➕</span> New Patient</div>
+      <div class="nav-item" onclick="showPage('c-patients',this)"><span class="nav-icon">👥</span> Patients <span class="nav-badge">3</span></div>
+      <div class="sidebar-section">Data</div>
+      <div class="nav-item" onclick="showPage('c-sync',this)"><span class="nav-icon">🔄</span> Sync Queue <span class="nav-badge amber">7</span></div>
+      <div class="nav-item" onclick="showPage('c-protocols',this)"><span class="nav-icon">📋</span> Protocols</div>
+    </div>
+    <div id="sb-researcher" style="display:none;">
+      <div class="sidebar-section">Research</div>
+      <div class="nav-item active" onclick="showPage('r-dashboard',this)"><span class="nav-icon">📊</span> Overview</div>
+      <div class="nav-item" onclick="showPage('r-query',this)"><span class="nav-icon">🔍</span> Federated Query</div>
+      <div class="nav-item" onclick="showPage('r-studies',this)"><span class="nav-icon">📁</span> Studies</div>
+      <div class="sidebar-section">Collaboration</div>
+      <div class="nav-item" onclick="showPage('r-access',this)"><span class="nav-icon">🔐</span> Data Access</div>
+      <div class="nav-item" onclick="showPage('r-publications',this)"><span class="nav-icon">📄</span> Publications</div>
+    </div>
+    <div id="sb-admin" style="display:none;">
+      <div class="sidebar-section">Governance</div>
+      <div class="nav-item active" onclick="showPage('a-dashboard',this)"><span class="nav-icon">📊</span> Overview</div>
+      <div class="nav-item" onclick="showPage('a-sites',this)"><span class="nav-icon">🌍</span> Sites</div>
+      <div class="nav-item" onclick="showPage('a-compliance',this)"><span class="nav-icon">⚖️</span> Compliance</div>
+      <div class="sidebar-section">System</div>
+      <div class="nav-item" onclick="showPage('a-audit',this)"><span class="nav-icon">📝</span> Audit Log</div>
+      <div class="nav-item" onclick="showPage('a-reports',this)"><span class="nav-icon">📈</span> Reports</div>
+    </div>
+    <div class="sidebar-footer">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mid);">
+        <span class="sync-dot"></span> Syncing — last 4 min ago
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- CLINICIAN: Dashboard -->
+    <div class="page active" id="c-dashboard">
+      <div class="module-label ml-clinician">🏥 Clinician App — Gbagada General Hospital, Lagos</div>
+      <div class="page-header">
+        <div><div class="page-title">Good morning, Nurse Kemi</div><div class="page-sub">Thursday 10 July 2025 · Ward 4B · 12 patients today</div></div>
+        <button class="btn btn-primary" onclick="showPage('c-new-patient')">➕ New Patient</button>
+      </div>
+      <div class="offline-banner">⚡ Offline mode active — 7 records queued for sync when connection restores</div>
+      <div class="grid-4" style="margin-bottom:1rem;">
+        <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Patients today</div><div class="stat-change up">↑ 3 from yesterday</div></div>
+        <div class="stat-card"><div class="stat-val">7</div><div class="stat-lbl">Pending sync</div><div class="stat-change warn">⚡ Offline queue</div></div>
+        <div class="stat-card"><div class="stat-val">3</div><div class="stat-lbl">Urgent flags</div><div class="stat-change" style="color:var(--red);">⚠ Needs review</div></div>
+        <div class="stat-card"><div class="stat-val">94%</div><div class="stat-lbl">Data completeness</div><div class="stat-change up">↑ Above site avg</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Urgent Patient Flags</div>
+          <div class="alert-item"><div class="alert-dot red"></div><div><div class="alert-text"><strong>Patient TB-0042</strong> — Sputum positive, drug resistance pattern detected. Escalate to TB officer immediately.</div><div class="alert-meta">Flagged 08:14 · Room 4B-12</div></div></div>
+          <div class="alert-item"><div class="alert-dot red"></div><div><div class="alert-text"><strong>Patient MA-0117</strong> — RDT positive malaria + fever 39.4°C. Co-infection with respiratory symptoms. Protocol 3B recommended.</div><div class="alert-meta">Flagged 09:02 · OPD</div></div></div>
+          <div class="alert-item"><div class="alert-dot amber"></div><div><div class="alert-text"><strong>Patient HV-0089</strong> — Missed 2 ART doses this week. Adherence counselling required.</div><div class="alert-meta">Flagged 07:45 · Ward 2</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Today's Patients</div>
+          <table>
+            <thead><tr><th>ID</th><th>Condition</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><strong>TB-0042</strong></td><td><span class="tag tag-red">TB</span></td><td><span class="tag tag-red">Urgent</span></td><td><button class="btn btn-ghost btn-sm" onclick="showPage('c-new-patient')">View</button></td></tr>
+              <tr><td><strong>MA-0117</strong></td><td><span class="tag tag-amber">Malaria</span></td><td><span class="tag tag-red">Urgent</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+              <tr><td><strong>HV-0089</strong></td><td><span class="tag tag-purple">HIV</span></td><td><span class="tag tag-amber">Review</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+              <tr><td><strong>MA-0118</strong></td><td><span class="tag tag-amber">Malaria</span></td><td><span class="tag tag-teal">Stable</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+              <tr><td><strong>TB-0043</strong></td><td><span class="tag tag-red">TB</span></td><td><span class="tag tag-teal">Stable</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLINICIAN: New Patient -->
+    <div class="page" id="c-new-patient">
+      <div class="module-label ml-clinician">🏥 Clinician App</div>
+      <div class="page-header">
+        <div><div class="page-title">New Patient Assessment</div><div class="page-sub">Standardised FHIR R4 intake — data stays on device until synced</div></div>
+        <button class="btn btn-ghost" onclick="showPage('c-dashboard')">← Back</button>
+      </div>
+      <div class="sovereign-badge">🔒 Sovereignty protected — this record is encrypted locally and will never leave Nigeria without explicit authorisation.</div>
+      <div class="step-indicator">
+        <div class="step done"><div class="step-num">✓</div><span class="step-text">Demographics</span></div>
+        <div class="step-line done"></div>
+        <div class="step active"><div class="step-num">2</div><span class="step-text">Symptoms</span></div>
+        <div class="step-line"></div>
+        <div class="step todo"><div class="step-num">3</div><span class="step-text">Test Results</span></div>
+        <div class="step-line"></div>
+        <div class="step todo"><div class="step-num">4</div><span class="step-text">AI Assessment</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Presenting Symptoms</div>
+          <div class="form-group"><label class="form-label">Primary complaint</label><select class="form-select"><option>Fever</option><option>Cough</option><option>Weight loss</option><option>Night sweats</option></select></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Temperature (°C)</label><input class="form-input" type="number" value="38.9"/></div>
+            <div class="form-group"><label class="form-label">Duration (days)</label><input class="form-input" type="number" value="7"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Additional symptoms</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Night sweats</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Weight loss</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox"/> Cough</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Fatigue</label>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Clinical notes</label><textarea class="form-textarea">Patient presents with 7-day fever, night sweats, and 4kg weight loss. HIV status unknown.</textarea></div>
+        </div>
+        <div class="card" style="background:var(--teal-pale);border-color:var(--teal-mid);">
+          <div class="card-title" style="color:var(--teal);">AI Clinical Assessment</div>
+          <p style="font-size:12px;color:var(--teal);margin-bottom:1rem;">Supports clinical judgement only — not a diagnosis.</p>
+          <div style="margin-bottom:1rem;">
+            <div style="font-size:12px;font-weight:600;color:var(--mid);margin-bottom:8px;">Differential probability</div>
+            <div class="prog-row"><span class="prog-label">HIV (primary)</span><div class="prog-bar"><div class="prog-fill" style="width:72%;background:var(--purple);"></div></div><span class="prog-pct" style="color:var(--purple);">72%</span></div>
+            <div class="prog-row"><span class="prog-label">TB (co-infection)</span><div class="prog-bar"><div class="prog-fill" style="width:58%;"></div></div><span class="prog-pct">58%</span></div>
+            <div class="prog-row"><span class="prog-label">Malaria</span><div class="prog-bar"><div class="prog-fill" style="width:24%;background:var(--amber);"></div></div><span class="prog-pct" style="color:var(--amber);">24%</span></div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:1rem;">
+            <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Recommended next steps</div>
+            <div style="font-size:12px;color:var(--dark);line-height:1.6;">1. Order HIV rapid test (Priority)<br/>2. Request sputum for GeneXpert if HIV+<br/>3. RDT for malaria to rule out co-infection<br/>4. Document BMI</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="showToast('✅ Record saved offline — 8 records queued for sync')">Save &amp; Continue →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLINICIAN: Sync Queue -->
+    <div class="page" id="c-sync">
+      <div class="module-label ml-clinician">🏥 Clinician App</div>
+      <div class="page-header">
+        <div><div class="page-title">Sync Queue</div><div class="page-sub">7 records awaiting upload · All encrypted at rest</div></div>
+        <button class="btn btn-primary" onclick="showToast('📡 Sync initiated — connecting to TrialBridge server')">Sync Now</button>
+      </div>
+      <div class="offline-banner">⚡ No internet connection. Records are safely stored and encrypted on this device.</div>
+      <div class="card"><table>
+        <thead><tr><th>Patient ID</th><th>Record type</th><th>Created</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>TB-0042</strong></td><td>Assessment + sputum result</td><td>Today 08:14</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>MA-0117</strong></td><td>RDT result + vitals</td><td>Today 09:02</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>HV-0089</strong></td><td>ART adherence log</td><td>Today 07:45</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>MA-0118</strong></td><td>Follow-up assessment</td><td>Yesterday 16:30</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>TB-0043</strong></td><td>Initial assessment</td><td>Yesterday 15:12</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>HV-0090</strong></td><td>CD4 count entry</td><td>Yesterday 14:08</td><td><span class="tag tag-amber">Queued</span></td></tr>
+          <tr><td><strong>MA-0116</strong></td><td>Discharge summary</td><td>Yesterday 11:30</td><td><span class="tag tag-teal">Synced ✓</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- CLINICIAN: Patients -->
+    <div class="page" id="c-patients">
+      <div class="module-label ml-clinician">🏥 Clinician App</div>
+      <div class="page-header"><div><div class="page-title">Patient Records</div><div class="page-sub">All records encrypted locally — sovereign to Nigeria</div></div><button class="btn btn-primary" onclick="showPage('c-new-patient')">➕ New Patient</button></div>
+      <div class="card"><table><thead><tr><th>ID</th><th>Age/Sex</th><th>Condition</th><th>Last seen</th><th>Status</th><th></th></tr></thead><tbody>
+        <tr><td><strong>TB-0042</strong></td><td>34M</td><td><span class="tag tag-red">TB</span></td><td>Today</td><td><span class="tag tag-red">Urgent</span></td><td><button class="btn btn-ghost btn-sm" onclick="showPage('c-new-patient')">Open</button></td></tr>
+        <tr><td><strong>MA-0117</strong></td><td>28F</td><td><span class="tag tag-amber">Malaria</span></td><td>Today</td><td><span class="tag tag-red">Urgent</span></td><td><button class="btn btn-ghost btn-sm">Open</button></td></tr>
+        <tr><td><strong>HV-0089</strong></td><td>41M</td><td><span class="tag tag-purple">HIV</span></td><td>Today</td><td><span class="tag tag-amber">Review</span></td><td><button class="btn btn-ghost btn-sm">Open</button></td></tr>
+        <tr><td><strong>MA-0118</strong></td><td>19F</td><td><span class="tag tag-amber">Malaria</span></td><td>Today</td><td><span class="tag tag-teal">Stable</span></td><td><button class="btn btn-ghost btn-sm">Open</button></td></tr>
+        <tr><td><strong>TB-0043</strong></td><td>52M</td><td><span class="tag tag-red">TB</span></td><td>Yesterday</td><td><span class="tag tag-teal">Stable</span></td><td><button class="btn btn-ghost btn-sm">Open</button></td></tr>
+      </tbody></table></div>
+    </div>
+
+    <!-- CLINICIAN: Protocols -->
+    <div class="page" id="c-protocols">
+      <div class="module-label ml-clinician">🏥 Clinician App</div>
+      <div class="page-header"><div><div class="page-title">Clinical Protocols</div><div class="page-sub">FHIR R4 standardised — co-designed with KEMRI and WANETAM</div></div></div>
+      <div class="grid-3">
+        <div class="card"><div class="card-title">Malaria Protocol</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">WHO-aligned diagnostic pathway with RDT integration. Available offline.</p><span class="tag tag-amber">Updated Jul 2025</span></div>
+        <div class="card"><div class="card-title">TB Protocol</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">GeneXpert-first pathway with drug resistance flagging and escalation rules.</p><span class="tag tag-teal">Active</span></div>
+        <div class="card"><div class="card-title">HIV Protocol</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">ART initiation, adherence monitoring, and co-infection screening pathways.</p><span class="tag tag-teal">Active</span></div>
+      </div>
+    </div>
+
+    <!-- RESEARCHER: Dashboard -->
+    <div class="page" id="r-dashboard">
+      <div class="module-label ml-researcher">🔬 Researcher Portal — LSHTM, London</div>
+      <div class="page-header">
+        <div><div class="page-title">Research Overview</div><div class="page-sub">WANETAM-4 infectious disease study · 4 active African sites</div></div>
+        <button class="btn btn-primary" onclick="showPage('r-query')">🔍 Run Query</button>
+      </div>
+      <div class="sovereign-badge">🛡️ Federated access only — you are querying aggregate data. No patient records have left their country of origin.</div>
+      <div class="grid-4" style="margin-bottom:1rem;">
+        <div class="stat-card"><div class="stat-val">2,847</div><div class="stat-lbl">Total enrolled</div><div class="stat-change up">↑ 124 this week</div></div>
+        <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">Active sites</div><div class="stat-change up">NG · GH · KE · UG</div></div>
+        <div class="stat-card"><div class="stat-val">94.2%</div><div class="stat-lbl">Data completeness</div><div class="stat-change up">↑ Above 90% target</div></div>
+        <div class="stat-card"><div class="stat-val">0</div><div class="stat-lbl">Cross-border transfers</div><div class="stat-change up">✓ Sovereignty maintained</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Site Enrolment</div>
+          <div class="prog-row"><span class="prog-label">Lagos, Nigeria</span><div class="prog-bar"><div class="prog-fill" style="width:84%;"></div></div><span class="prog-pct">840</span></div>
+          <div class="prog-row"><span class="prog-label">Accra, Ghana</span><div class="prog-bar"><div class="prog-fill" style="width:71%;"></div></div><span class="prog-pct">712</span></div>
+          <div class="prog-row"><span class="prog-label">Nairobi, Kenya</span><div class="prog-bar"><div class="prog-fill" style="width:69%;"></div></div><span class="prog-pct">689</span></div>
+          <div class="prog-row"><span class="prog-label">Kampala, Uganda</span><div class="prog-bar"><div class="prog-fill" style="width:61%;"></div></div><span class="prog-pct">606</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Disease Distribution</div>
+          <div class="prog-row"><span class="prog-label">TB</span><div class="prog-bar"><div class="prog-fill" style="width:42%;background:#DC2626;"></div></div><span class="prog-pct">42%</span></div>
+          <div class="prog-row"><span class="prog-label">HIV</span><div class="prog-bar"><div class="prog-fill" style="width:35%;background:var(--purple);"></div></div><span class="prog-pct">35%</span></div>
+          <div class="prog-row"><span class="prog-label">Malaria</span><div class="prog-bar"><div class="prog-fill" style="width:18%;background:var(--amber);"></div></div><span class="prog-pct">18%</span></div>
+          <div class="prog-row"><span class="prog-label">Co-infection</span><div class="prog-bar"><div class="prog-fill" style="width:5%;"></div></div><span class="prog-pct">5%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESEARCHER: Federated Query -->
+    <div class="page" id="r-query">
+      <div class="module-label ml-researcher">🔬 Researcher Portal</div>
+      <div class="page-header"><div><div class="page-title">Federated Query Engine</div><div class="page-sub">Analyse across all sites — raw data never leaves each country</div></div></div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">How it works — no data crosses a border</div>
+        <div class="fed-diagram">
+          <div class="fed-node"><div class="node-icon">🇳🇬</div><div class="node-label">Lagos</div><div class="node-sub">840 records</div></div>
+          <div class="fed-arrow"><div class="fed-arrow-line"></div><div class="fed-arrow-label">aggregates only</div></div>
+          <div class="fed-center"><div class="node-icon" style="font-size:1.5rem;margin-bottom:4px;">⚡</div><div class="node-label">TrialBridge Query Engine</div><div class="node-sub">Zero raw data transfer</div></div>
+          <div class="fed-arrow"><div class="fed-arrow-line"></div><div class="fed-arrow-label">results returned</div></div>
+          <div class="fed-node"><div class="node-icon">🔬</div><div class="node-label">Researcher</div><div class="node-sub">LSHTM, London</div></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:4px;">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:600;">🇬🇭 Ghana · 712</div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:600;">🇰🇪 Kenya · 689</div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:600;">🇺🇬 Uganda · 606</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Build Query</div>
+          <div class="form-group"><label class="form-label">Disease focus</label><select class="form-select"><option>TB + HIV co-infection</option><option>Malaria (all types)</option><option>HIV — ART outcomes</option></select></div>
+          <div class="form-group"><label class="form-label">Sites to include</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Lagos</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Accra</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox" checked/> Nairobi</label>
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;"><input type="checkbox"/> Kampala</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Date from</label><input class="form-input" type="date" value="2025-01-01"/></div>
+            <div class="form-group"><label class="form-label">Date to</label><input class="form-input" type="date" value="2025-07-10"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Output type</label><select class="form-select"><option>Aggregate statistics</option><option>Anonymised cohort summary</option><option>Site comparison table</option></select></div>
+          <button class="btn btn-primary" style="width:100%;" onclick="showToast('🔍 Query running across 3 sites — zero bytes of patient data transferred')">Run Federated Query</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Last Results — TB/HIV Co-infection</div>
+          <div style="background:var(--bg);border-radius:6px;padding:10px;margin-bottom:1rem;font-size:12px;color:var(--mid);">09 Jul 2025 · 3 sites · 2,241 records analysed · 0 bytes transferred</div>
+          <div class="grid-2" style="gap:8px;margin-bottom:1rem;">
+            <div style="background:var(--teal-light);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--teal);">18.3%</div><div style="font-size:11px;color:var(--teal);">Co-infection rate</div></div>
+            <div style="background:var(--purple-light);border-radius:6px;padding:10px;text-align:center;"><div style="font-size:1.4rem;font-weight:700;color:var(--purple);">2.4x</div><div style="font-size:11px;color:var(--purple);">Higher TB risk if HIV+</div></div>
+          </div>
+          <table style="font-size:12px;"><thead><tr><th>Site</th><th>TB cases</th><th>HIV+TB</th><th>Rate</th></tr></thead>
+          <tbody>
+            <tr><td>🇳🇬 Lagos</td><td>347</td><td>68</td><td>19.6%</td></tr>
+            <tr><td>🇬🇭 Accra</td><td>291</td><td>51</td><td>17.5%</td></tr>
+            <tr><td>🇰🇪 Nairobi</td><td>274</td><td>48</td><td>17.5%</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESEARCHER: Data Access -->
+    <div class="page" id="r-access">
+      <div class="module-label ml-researcher">🔬 Researcher Portal</div>
+      <div class="page-header"><div><div class="page-title">Data Access Requests</div><div class="page-sub">African site PIs control all access — requests reviewed by local investigators</div></div><button class="btn btn-primary" onclick="showToast('📋 New access request form opened')">Request Access</button></div>
+      <div class="card"><table><thead><tr><th>Study</th><th>Site</th><th>Requested</th><th>Purpose</th><th>Status</th></tr></thead><tbody>
+        <tr><td><strong>WANETAM-TB-01</strong></td><td>🇳🇬 Lagos</td><td>01 Jul 2025</td><td>Drug resistance analysis</td><td><span class="tag tag-teal">Approved</span></td></tr>
+        <tr><td><strong>WANETAM-HIV-03</strong></td><td>🇬🇭 Accra</td><td>05 Jul 2025</td><td>ART outcome comparison</td><td><span class="tag tag-amber">Pending PI review</span></td></tr>
+        <tr><td><strong>WANETAM-MA-02</strong></td><td>🇰🇪 Nairobi</td><td>08 Jul 2025</td><td>Seasonal malaria patterns</td><td><span class="tag tag-amber">Pending PI review</span></td></tr>
+        <tr><td><strong>WANETAM-TB-02</strong></td><td>🇺🇬 Kampala</td><td>10 Jul 2025</td><td>Paediatric TB cohort</td><td><span class="tag tag-gray">Draft</span></td></tr>
+      </tbody></table></div>
+    </div>
+
+    <!-- RESEARCHER: Studies -->
+    <div class="page" id="r-studies">
+      <div class="module-label ml-researcher">🔬 Researcher Portal</div>
+      <div class="page-header"><div><div class="page-title">Active Studies</div></div></div>
+      <div class="grid-2">
+        <div class="card"><h3 style="margin-bottom:4px;">WANETAM-TB-01</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">TB drug resistance patterns across West Africa · 36 month study</p><span class="tag tag-teal">Active</span> <span class="tag tag-gray">PI: Dr Amara Kofi, Accra</span></div>
+        <div class="card"><h3 style="margin-bottom:4px;">WANETAM-HIV-03</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">ART treatment outcomes in HIV/TB co-infected patients</p><span class="tag tag-teal">Active</span> <span class="tag tag-gray">PI: Dr Fatima Osei, Lagos</span></div>
+        <div class="card"><h3 style="margin-bottom:4px;">WANETAM-MA-02</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Seasonal malaria surveillance using community health worker data</p><span class="tag tag-amber">Enrolment open</span> <span class="tag tag-gray">PI: Dr James Mwangi, Nairobi</span></div>
+      </div>
+    </div>
+
+    <!-- RESEARCHER: Publications -->
+    <div class="page" id="r-publications">
+      <div class="module-label ml-researcher">🔬 Researcher Portal</div>
+      <div class="page-header"><div><div class="page-title">Publications</div><div class="page-sub">Co-authorship tracking — African PIs listed as lead authors by design</div></div></div>
+      <div class="card"><table><thead><tr><th>Title</th><th>Lead author</th><th>Journal</th><th>Status</th></tr></thead><tbody>
+        <tr><td>TB drug resistance in Lagos: a 24-month cohort</td><td>Dr F. Osei (Nigeria)</td><td>Lancet Infectious Diseases</td><td><span class="tag tag-amber">Under review</span></td></tr>
+        <tr><td>HIV/TB co-infection rates in West Africa: a multi-site study</td><td>Dr A. Kofi (Ghana)</td><td>PLOS Medicine</td><td><span class="tag tag-gray">In preparation</span></td></tr>
+      </tbody></table></div>
+    </div>
+
+    <!-- ADMIN: Dashboard -->
+    <div class="page" id="a-dashboard">
+      <div class="module-label ml-admin">⚙️ Admin Dashboard — Telecity Technologies</div>
+      <div class="page-header">
+        <div><div class="page-title">Governance Overview</div><div class="page-sub">TrialBridge network · EDCTP3 WANETAM consortium</div></div>
+        <button class="btn btn-primary" onclick="showPage('a-compliance')">View Compliance</button>
+      </div>
+      <div class="grid-4" style="margin-bottom:1rem;">
+        <div class="stat-card"><div class="stat-val">4</div><div class="stat-lbl">Active sites</div><div class="stat-change up">✓ All connected</div></div>
+        <div class="stat-card"><div class="stat-val">2,847</div><div class="stat-lbl">Total records</div><div class="stat-change up">↑ 124 this week</div></div>
+        <div class="stat-card"><div class="stat-val">100%</div><div class="stat-lbl">Data sovereignty</div><div class="stat-change up">✓ Zero cross-border</div></div>
+        <div class="stat-card"><div class="stat-val">3/4</div><div class="stat-lbl">DPAs signed</div><div class="stat-change warn">Kenya pending</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Site Status</div>
+          <table><thead><tr><th>Site</th><th>Records</th><th>Last sync</th><th>Status</th></tr></thead><tbody>
+            <tr><td>🇳🇬 Gbagada General, Lagos</td><td>840</td><td>4 min ago</td><td><span class="tag tag-teal">Online</span></td></tr>
+            <tr><td>🇳🇬 LUTH, Lagos</td><td>412</td><td>12 min ago</td><td><span class="tag tag-teal">Online</span></td></tr>
+            <tr><td>🇬🇭 Korle Bu, Accra</td><td>712</td><td>1 hr ago</td><td><span class="tag tag-teal">Online</span></td></tr>
+            <tr><td>🇰🇪 KNH, Nairobi</td><td>689</td><td>2 hr ago</td><td><span class="tag tag-amber">Syncing</span></td></tr>
+            <tr><td>🇺🇬 Mulago, Kampala</td><td>606</td><td>30 min ago</td><td><span class="tag tag-teal">Online</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-title">Compliance Status</div>
+          <div class="alert-item"><div class="alert-dot teal"></div><div><div class="alert-text"><strong>Nigeria NDPA</strong> — Data Processing Agreement active. All Lagos sites compliant.</div><div class="alert-meta">Verified 01 Jul 2025</div></div></div>
+          <div class="alert-item"><div class="alert-dot teal"></div><div><div class="alert-text"><strong>EU GDPR</strong> — Federated architecture confirmed compliant. No personal data transferred.</div><div class="alert-meta">Legal opinion: 15 Jun 2025</div></div></div>
+          <div class="alert-item"><div class="alert-dot teal"></div><div><div class="alert-text"><strong>Ghana DPA</strong> — Data sharing agreement signed by Korle Bu Hospital PI.</div><div class="alert-meta">Signed 22 Jun 2025</div></div></div>
+          <div class="alert-item"><div class="alert-dot amber"></div><div><div class="alert-text"><strong>Kenya DPA</strong> — Pending ethics committee signature. Expected 20 Jul 2025.</div><div class="alert-meta">In progress</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Compliance -->
+    <div class="page" id="a-compliance">
+      <div class="module-label ml-admin">⚙️ Admin Dashboard</div>
+      <div class="page-header"><div><div class="page-title">Compliance &amp; Governance</div><div class="page-sub">Data sharing agreements · Legal frameworks · Ethics approvals</div></div></div>
+      <div class="grid-3">
+        <div class="card" style="border-left:4px solid var(--teal-mid);"><div class="card-title">Nigeria NDPA</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">National Data Protection Act compliance verified for all Lagos sites.</p><span class="tag tag-teal">✓ Compliant</span></div>
+        <div class="card" style="border-left:4px solid var(--teal-mid);"><div class="card-title">EU GDPR</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Federated architecture legal opinion confirms no GDPR transfer mechanism required.</p><span class="tag tag-teal">✓ Compliant</span></div>
+        <div class="card" style="border-left:4px solid var(--amber);"><div class="card-title">Kenya DPA</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Ethics committee signature pending. Data collection paused at KNH until resolved.</p><span class="tag tag-amber">⏳ Pending</span></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Sites -->
+    <div class="page" id="a-sites">
+      <div class="module-label ml-admin">⚙️ Admin Dashboard</div>
+      <div class="page-header"><div><div class="page-title">Site Management</div></div></div>
+      <div class="grid-2">
+        <div class="card"><h3 style="margin-bottom:4px;">🇳🇬 Gbagada General Hospital</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Lagos, Nigeria · 840 records · 4 clinicians</p><span class="tag tag-teal">Active</span></div>
+        <div class="card"><h3 style="margin-bottom:4px;">🇬🇭 Korle Bu Teaching Hospital</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Accra, Ghana · 712 records · 3 clinicians</p><span class="tag tag-teal">Active</span></div>
+        <div class="card"><h3 style="margin-bottom:4px;">🇰🇪 Kenyatta National Hospital</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Nairobi, Kenya · 689 records · 5 clinicians</p><span class="tag tag-amber">DPA pending</span></div>
+        <div class="card"><h3 style="margin-bottom:4px;">🇺🇬 Mulago National Hospital</h3><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Kampala, Uganda · 606 records · 3 clinicians</p><span class="tag tag-teal">Active</span></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Audit Log -->
+    <div class="page" id="a-audit">
+      <div class="module-label ml-admin">⚙️ Admin Dashboard</div>
+      <div class="page-header"><div><div class="page-title">Audit Log</div><div class="page-sub">All data access events — immutable record</div></div></div>
+      <div class="card"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Site</th><th>Result</th></tr></thead><tbody>
+        <tr><td>10:14</td><td>Prof. T. Togun (LSHTM)</td><td>Federated query — TB/HIV</td><td>All sites</td><td><span class="tag tag-teal">Approved</span></td></tr>
+        <tr><td>09:58</td><td>Dr A. Kofi (Accra)</td><td>Data access request</td><td>Ghana</td><td><span class="tag tag-teal">Approved</span></td></tr>
+        <tr><td>09:02</td><td>Nurse Kemi (Lagos)</td><td>Patient record created</td><td>Nigeria</td><td><span class="tag tag-teal">Saved locally</span></td></tr>
+        <tr><td>08:45</td><td>Dr F. Osei (Lagos)</td><td>Protocol update</td><td>Nigeria</td><td><span class="tag tag-teal">Applied</span></td></tr>
+        <tr><td>08:14</td><td>Nurse Kemi (Lagos)</td><td>Patient record created</td><td>Nigeria</td><td><span class="tag tag-teal">Saved locally</span></td></tr>
+      </tbody></table></div>
+    </div>
+
+    <!-- ADMIN: Reports -->
+    <div class="page" id="a-reports">
+      <div class="module-label ml-admin">⚙️ Admin Dashboard</div>
+      <div class="page-header"><div><div class="page-title">Reports</div><div class="page-sub">EDCTP3 progress · WHO regulatory submissions</div></div><button class="btn btn-primary" onclick="showToast('📊 Report generated and ready to download')">Generate Report</button></div>
+      <div class="grid-3">
+        <div class="card"><div class="card-title">EDCTP3 Progress</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Q2 2025 milestone report — all deliverables on track</p><span class="tag tag-teal">Ready</span></div>
+        <div class="card"><div class="card-title">WHO Regulatory</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">Pharmacovigilance summary · July 2025</p><span class="tag tag-amber">In progress</span></div>
+        <div class="card"><div class="card-title">Enrolment Summary</div><p style="font-size:12px;color:var(--mid);margin-bottom:8px;">All sites · July 2025 · 2,847 participants</p><span class="tag tag-teal">Ready</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function switchModule(mod, btn) {
+  document.querySelectorAll('.mod-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[id^="sb-"]').forEach(s => s.style.display = 'none');
+  document.getElementById('sb-' + mod).style.display = 'block';
+  var defaults = {clinician:'c-dashboard', researcher:'r-dashboard', admin:'a-dashboard'};
+  showPage(defaults[mod]);
+  var avatars = {
+    clinician:{av:'NK',name:'Nurse Kemi',loc:'Gbagada General, Lagos'},
+    researcher:{av:'TT',name:'Prof. T. Togun',loc:'LSHTM, London'},
+    admin:{av:'OF',name:'Olusegun Fatokun',loc:'Telecity Technologies'}
+  };
+  var a = avatars[mod];
+  document.getElementById('av').textContent = a.av;
+  document.getElementById('uname').textContent = a.name;
+  document.getElementById('uloc').textContent = a.loc;
+}
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  var pg = document.getElementById(id);
+  if(pg) pg.classList.add('active');
+}
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>
