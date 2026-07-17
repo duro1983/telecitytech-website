@@ -127,10 +127,75 @@ tr:hover td{background:var(--bg);}
 .ml-admin{background:#E6F1FB;color:#185FA5;}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--dark);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;z-index:999;}
 .toast.show{opacity:1;transform:translateY(0);}
+
+/* INTRO MODAL */
+.intro-overlay{position:fixed;inset:0;background:rgba(15,26,23,0.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;}
+.intro-modal{background:#fff;border-radius:14px;max-width:680px;width:100%;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.3);}
+.intro-header{background:linear-gradient(135deg,var(--dark) 0%,#1a3a30 60%,var(--teal) 100%);padding:2rem;color:#fff;}
+.intro-header-tag{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal-mid);margin-bottom:8px;}
+.intro-header h2{font-size:1.5rem;font-weight:700;color:#fff;letter-spacing:-0.02em;margin-bottom:6px;}
+.intro-header p{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5;}
+.intro-body{padding:1.5rem;}
+.intro-problems{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+.intro-prob{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;border-top:3px solid var(--teal-mid);}
+.intro-prob-num{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal-mid);margin-bottom:4px;}
+.intro-prob h4{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:4px;line-height:1.3;}
+.intro-prob p{font-size:11px;color:var(--mid);line-height:1.4;margin:0;}
+.intro-how{background:var(--teal-light);border-radius:8px;padding:12px 14px;margin-bottom:1.25rem;}
+.intro-how-title{font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.intro-how ul{padding-left:0;list-style:none;}
+.intro-how li{font-size:12px;color:var(--teal);line-height:1.5;display:flex;gap:6px;margin-bottom:2px;}
+.intro-how li::before{content:"→";font-weight:700;flex-shrink:0;}
+.intro-footer{display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.intro-footer p{font-size:12px;color:var(--mid);}
+.intro-close{background:var(--teal-mid);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;}
+.intro-close:hover{background:var(--teal);}
 </style>
 </head>
 <body>
 
+
+<!-- INTRO MODAL -->
+<div class="intro-overlay" id="introOverlay">
+  <div class="intro-modal">
+    <div class="intro-header">
+      <div class="intro-header-tag">Interactive Demo — Telecity Technologies Limited</div>
+      <h2>TrialBridge: What Problem Does This Solve?</h2>
+      <p>African and European research institutions want to collaborate on infectious disease studies — but three structural barriers make it nearly impossible. This demo shows how TrialBridge removes each one.</p>
+    </div>
+    <div class="intro-body">
+      <div class="intro-problems">
+        <div class="intro-prob">
+          <div class="intro-prob-num">Barrier 01</div>
+          <h4>Legal incompatibility</h4>
+          <p>African data laws (Nigeria NDPA, POPIA) conflict with EU GDPR — institutions can't share data legally across borders.</p>
+        </div>
+        <div class="intro-prob">
+          <div class="intro-prob-num">Barrier 02</div>
+          <h4>Incompatible data standards</h4>
+          <p>African sites use different systems and case definitions — joint analysis requires months of manual harmonisation.</p>
+        </div>
+        <div class="intro-prob">
+          <div class="intro-prob-num">Barrier 03</div>
+          <h4>Power imbalance</h4>
+          <p>African institutions are treated as data collectors, not co-investigators — excluded from study design and lead authorship.</p>
+        </div>
+      </div>
+      <div class="intro-how">
+        <div class="intro-how-title">How to read this demo</div>
+        <ul>
+          <li>🏥 Clinician App — See how a Lagos nurse captures data offline, fully encrypted, never leaving Nigeria (Barrier 01 + 02)</li>
+          <li>🔬 Researcher Portal — See how a London researcher queries African data without any raw data transfer (Barrier 01)</li>
+          <li>⚙️ Admin Dashboard — See how African site PIs control all data access and governance (Barrier 03)</li>
+        </ul>
+      </div>
+      <div class="intro-footer">
+        <p>Switch between modules using the top navigation bar. Each module shows a different user's perspective.</p>
+        <button class="intro-close" onclick="document.getElementById('introOverlay').style.display='none'">Explore the Demo →</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="topnav">
   <div class="topnav-logo">
     <span class="logo-badge">TB</span>
